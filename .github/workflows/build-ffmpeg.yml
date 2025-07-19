@@ -1,4 +1,4 @@
-name: Build FFmpeg 7 for Android
+name: Build FFmpeg for Android
 
 on:
   workflow_dispatch:
@@ -8,60 +8,57 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v3
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential pkg-config git yasm nasm
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget git make pkg-config build-essential
 
-      - name: Download Android NDK
-        run: |
-          wget https://dl.google.com/android/repository/android-ndk-r26b-linux.zip
-          unzip android-ndk-r26b-linux.zip
-          export NDK=$GITHUB_WORKSPACE/android-ndk-r26b
-          echo "NDK=$NDK" >> $GITHUB_ENV
+    - name: Download Android NDK
+      run: |
+        wget https://dl.google.com/android/repository/android-ndk-r26b-linux.zip
+        unzip android-ndk-r26b-linux.zip
 
-      - name: Clone FFmpeg 7
-        run: |
-          git clone https://git.ffmpeg.org/ffmpeg.git
-          cd ffmpeg
-          git checkout n7.0
-          echo "FFMPEG_DIR=$GITHUB_WORKSPACE/ffmpeg" >> $GITHUB_ENV
+    - name: Clone FFmpeg
+      run: |
+        git clone --depth=1 https://git.ffmpeg.org/ffmpeg.git ffmpeg
+        cd ffmpeg
+        git checkout n6.1  # or latest stable tag you want
 
-      - name: Build FFmpeg
-        run: |
-          export NDK=$GITHUB_WORKSPACE/android-ndk-r26b
-          export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/linux-x86_64
-          export PATH=$TOOLCHAIN/bin:$PATH
-          cd ffmpeg
-          ./configure \
-            --prefix=$GITHUB_WORKSPACE/build \
-            --enable-cross-compile \
-            --cross-prefix=aarch64-linux-android- \
-            --target-os=android \
-            --arch=aarch64 \
-            --sysroot=$TOOLCHAIN/sysroot \
-            --cc=aarch64-linux-android21-clang \
-            --cxx=aarch64-linux-android21-clang++ \
-            --enable-gpl \
-            --enable-nonfree \
-            --enable-openssl \
-            --enable-libx264 \
-            --enable-libx265 \
-            --enable-librtmp \
-            --enable-libvpx \
-            --enable-libopus \
-            --disable-doc \
-            --disable-programs \
-            --disable-static \
-            --enable-shared
-          make -j$(nproc)
-          make install
+    - name: Build FFmpeg
+      run: |
+        export NDK=$GITHUB_WORKSPACE/android-ndk-r26b
+        export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/linux-x86_64
+        export PATH=$TOOLCHAIN/bin:$PATH
+        cd ffmpeg
+        ./configure \
+          --prefix=$GITHUB_WORKSPACE/build \
+          --enable-cross-compile \
+          --cross-prefix=aarch64-linux-android- \
+          --target-os=android \
+          --arch=aarch64 \
+          --sysroot=$TOOLCHAIN/sysroot \
+          --cc=aarch64-linux-android21-clang \
+          --cxx=aarch64-linux-android21-clang++ \
+          --enable-gpl \
+          --enable-nonfree \
+          --enable-openssl \
+          --enable-libx264 \
+          --enable-libx265 \
+          --enable-librtmp \
+          --enable-libvpx \
+          --disable-libopus \
+          --disable-doc \
+          --disable-programs \
+          --disable-static \
+          --enable-shared
+        make -j$(nproc)
+        make install
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ffmpeg-android-aarch64
-          path: build
+    - name: Upload Build
+      uses: actions/upload-artifact@v4
+      with:
+        name: ffmpeg-android-build
+        path: build
