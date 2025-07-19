@@ -1,4 +1,4 @@
-name: Build FFmpeg for Android ARM64
+name: Build FFmpeg for Android
 
 on:
   workflow_dispatch:
@@ -8,58 +8,88 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Install Dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y autoconf automake libtool pkg-config
+      - name: Checkout
+        uses: actions/checkout@v3
 
-    - name: Checkout FFmpeg
-      run: |
-        git clone --depth=1 --branch n7.0 https://github.com/FFmpeg/FFmpeg.git ffmpeg
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            autoconf automake build-essential \
+            cmake git libtool make \
+            pkg-config texinfo nasm yasm \
+            wget unzip
 
-    - name: Download and Extract Android NDK
-      run: |
-        wget https://dl.google.com/android/repository/android-ndk-r26b-linux.zip
-        unzip android-ndk-r26b-linux.zip
-        echo "TOOLCHAIN=$(pwd)/android-ndk-r26b/toolchains/llvm/prebuilt/linux-x86_64" >> $GITHUB_ENV
+      - name: Download Android NDK
+        run: |
+          wget https://dl.google.com/android/repository/android-ndk-r26b-linux.zip
+          unzip android-ndk-r26b-linux.zip
 
-    - name: Build libfdk-aac
-      run: |
-        git clone --depth=1 https://github.com/mstorsjo/fdk-aac.git
-        cd fdk-aac
-        ./autogen.sh
-        ./configure --host=aarch64-linux-android --prefix=$(pwd)/build --disable-shared --enable-static \
-          --with-sysroot=$TOOLCHAIN/sysroot \
-          CC=$TOOLCHAIN/bin/aarch64-linux-android21-clang
-        make -j$(nproc)
-        make install
-        echo "FDK_AAC_PATH=$(pwd)/build" >> $GITHUB_ENV
+      - name: Clone fdk-aac
+        run: |
+          git clone https://github.com/mstorsjo/fdk-aac.git
+          cd fdk-aac
+          autoreconf -fiv
+          ./configure --prefix=$GITHUB_WORKSPACE/fdk-aac-build --host=aarch64-linux
+          make -j$(nproc)
+          make install
 
-    - name: Build FFmpeg
-      run: |
-        cd ffmpeg
-        ./configure \
-          --prefix=$PWD/build \
-          --target-os=android \
-          --arch=arm64 \
-          --cpu=armv8-a \
-          --cross-prefix=$TOOLCHAIN/bin/aarch64-linux-android- \
-          --cc=$TOOLCHAIN/bin/aarch64-linux-android21-clang \
-          --enable-cross-compile \
-          --disable-shared \
-          --enable-static \
-          --disable-doc \
-          --disable-programs \
-          --enable-gpl \
-          --enable-nonfree \
-          --enable-libfdk_aac \
-          --extra-cflags="-I$FDK_AAC_PATH/include" \
-          --extra-ldflags="-L$FDK_AAC_PATH/lib"
-        make -j$(nproc)
-        make install
+      - name: Clone FFmpeg
+        run: |
+          git clone --depth=1 https://git.ffmpeg.org/ffmpeg.git ffmpeg
 
-    - name: Upload Build Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: ffmpeg-android-arm64
-        path: ffmpeg/build
+      - name: Build FFmpeg
+        run: |
+          export NDK=$GITHUB_WORKSPACE/android-ndk-r26b
+          export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/linux-x86_64
+          export API=21
+          export ARCH=aarch64
+          export CPU=armv8-a
+          export PREFIX=$GITHUB_WORKSPACE/build/android/$ARCH
+          export FDK_AAC_PATH=$GITHUB_WORKSPACE/fdk-aac-build
+
+          export PATH=$TOOLCHAIN/bin:$PATH
+          export CC=$TOOLCHAIN/bin/${ARCH}-linux-android$API-clang
+          export CXX=$TOOLCHAIN/bin/${ARCH}-linux-android$API-clang++
+
+          cd ffmpeg
+          ./configure \
+            --prefix=$PREFIX \
+            --enable-cross-compile \
+            --cross-prefix=$TOOLCHAIN/bin/${ARCH}-linux-android- \
+            --target-os=android \
+            --arch=$ARCH \
+            --cpu=$CPU \
+            --cc=$CC \
+            --cxx=$CXX \
+            --nm=$TOOLCHAIN/bin/${ARCH}-linux-android-nm \
+            --strip=$TOOLCHAIN/bin/${ARCH}-linux-android-strip \
+            --sysroot=$TOOLCHAIN/sysroot \
+            --enable-gpl \
+            --enable-nonfree \
+            --enable-libx264 \
+            --enable-libx265 \
+            --enable-libfdk-aac \
+            --enable-openssl \
+            --enable-pic \
+            --enable-small \
+            --disable-doc \
+            --disable-programs \
+            --enable-avdevice \
+            --enable-avfilter \
+            --enable-network \
+            --enable-protocol=rtmp \
+            --enable-pthreads \
+            --extra-cflags="-I$FDK_AAC_PATH/include" \
+            --extra-ldflags="-L$FDK_AAC_PATH/lib" \
+            --disable-libass \
+            --disable-subtitles
+
+          make -j$(nproc)
+          make install
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ffmpeg-android
+          path: build/android/aarch64
