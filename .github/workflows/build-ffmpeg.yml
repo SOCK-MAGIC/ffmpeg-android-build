@@ -1,4 +1,4 @@
-name: Build FFmpeg for Android ARM64 without Subtitles
+name: Build FFmpeg for Android
 
 on:
   workflow_dispatch:
@@ -6,72 +6,53 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout FFmpeg
+    - name: Checkout FFmpeg 7.0
       run: |
-        git clone --depth=1 https://git.ffmpeg.org/ffmpeg.git ffmpeg
-        cd ffmpeg
-        git checkout n7.0
+        git clone --depth=1 --branch n7.0 https://github.com/FFmpeg/FFmpeg.git ffmpeg
 
-    - name: Download Android NDK
+    - name: Setup NDK
       run: |
         wget https://dl.google.com/android/repository/android-ndk-r26b-linux.zip
         unzip android-ndk-r26b-linux.zip
+        export TOOLCHAIN=$PWD/android-ndk-r26b/toolchains/llvm/prebuilt/linux-x86_64
 
     - name: Build FFmpeg
       run: |
-        export NDK=$PWD/android-ndk-r26b
-        export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/linux-x86_64
-        export API=21
-
-        export CC=$TOOLCHAIN/bin/aarch64-linux-android$API-clang
-        export CXX=$TOOLCHAIN/bin/aarch64-linux-android$API-clang++
-        export LD=$TOOLCHAIN/bin/aarch64-linux-android-ld
-        export AR=$TOOLCHAIN/bin/aarch64-linux-android-ar
-        export AS=$TOOLCHAIN/bin/aarch64-linux-android-as
-        export NM=$TOOLCHAIN/bin/aarch64-linux-android-nm
-        export STRIP=$TOOLCHAIN/bin/aarch64-linux-android-strip
-
+        export TOOLCHAIN=$PWD/android-ndk-r26b/toolchains/llvm/prebuilt/linux-x86_64
         cd ffmpeg
-
         ./configure \
-          --prefix=$PWD/build/arm64-v8a \
+          --prefix=$PWD/build \
           --target-os=android \
-          --arch=aarch64 \
+          --arch=arm64 \
           --cpu=armv8-a \
           --cross-prefix=$TOOLCHAIN/bin/aarch64-linux-android- \
-          --cc=$CC \
-          --cxx=$CXX \
-          --nm=$NM \
-          --strip=$STRIP \
+          --cc=$TOOLCHAIN/bin/aarch64-linux-android21-clang \
           --enable-cross-compile \
-          --enable-shared \
-          --disable-static \
+          --disable-shared \
+          --enable-static \
           --disable-doc \
-          --disable-symver \
-          --disable-debug \
+          --disable-programs \
+          --disable-libass \
           --enable-gpl \
           --enable-nonfree \
-          --enable-openssl \
           --enable-libx264 \
           --enable-libx265 \
-          --enable-libfdk-aac \
-          --enable-neon \
-          --enable-mediacodec \
           --enable-libvpx \
+          --enable-librtmp \
+          --enable-openssl \
+          --enable-libfdk-aac \
+          --enable-libmp3lame \
           --enable-libopus \
           --enable-libvorbis \
-          --enable-librtmp \
-          --disable-libass \
-          --disable-libfreetype \
-          --disable-subtitles
-
+          --enable-pic \
+          --enable-small \
+          --extra-cflags="-march=armv8-a"
         make -j$(nproc)
         make install
 
-    - name: Archive Build
+    - name: Upload Build Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: ffmpeg-android-arm64
-        path: ffmpeg/build/arm64-v8a
+        path: ffmpeg/build
