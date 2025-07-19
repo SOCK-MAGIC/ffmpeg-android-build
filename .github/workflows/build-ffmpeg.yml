@@ -1,4 +1,4 @@
-name: FFmpeg Android Build
+name: Build FFmpeg Android ARM64
 
 on:
   workflow_dispatch:
@@ -14,7 +14,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y git wget make automake autoconf build-essential pkg-config libtool
+        sudo apt-get install -y build-essential pkg-config git wget tar automake autoconf libtool nasm
 
     - name: Download Android NDK
       run: |
@@ -24,50 +24,55 @@ jobs:
 
     - name: Clone FFmpeg
       run: |
-        git clone https://github.com/FFmpeg/FFmpeg.git ffmpeg
+        git clone --depth=1 https://git.ffmpeg.org/ffmpeg.git ffmpeg
         cd ffmpeg
-        git checkout n6.1
+        git checkout n7.0
 
-    - name: Build FFmpeg for Android
+    - name: Build FFmpeg
       run: |
         export NDK=$PWD/android-ndk-r26b
         export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/linux-x86_64
         export API=21
+        export TARGET=aarch64-linux-android
+        export PREFIX=$PWD/ffmpeg-build
 
         cd ffmpeg
 
         ./configure \
-          --prefix=$PWD/build \
+          --prefix=$PREFIX \
           --target-os=android \
           --arch=aarch64 \
           --cpu=armv8-a \
-          --cross-prefix=$TOOLCHAIN/bin/aarch64-linux-android- \
-          --cc=$TOOLCHAIN/bin/aarch64-linux-android$API-clang \
-          --cxx=$TOOLCHAIN/bin/aarch64-linux-android$API-clang++ \
-          --nm=$TOOLCHAIN/bin/aarch64-linux-android-nm \
-          --sysroot=$TOOLCHAIN/sysroot \
           --enable-cross-compile \
+          --cross-prefix=$TOOLCHAIN/bin/$TARGET- \
+          --cc=$TOOLCHAIN/bin/$TARGET$API-clang \
+          --cxx=$TOOLCHAIN/bin/$TARGET$API-clang++ \
+          --nm=$TOOLCHAIN/bin/$TARGET-nm \
+          --sysroot=$TOOLCHAIN/sysroot \
+          --disable-shared \
+          --enable-static \
           --enable-gpl \
           --enable-nonfree \
           --enable-libx264 \
           --enable-libx265 \
-          --enable-libfdk-aac \
-          --enable-libmp3lame \
-          --enable-libopus \
-          --enable-libvpx \
-          --enable-librtmp \
           --enable-openssl \
-          --disable-debug \
+          --enable-pic \
+          --enable-neon \
+          --enable-optimizations \
+          --enable-encoder=aac \
+          --enable-protocol=rtmp \
           --disable-doc \
-          --enable-static \
-          --disable-shared \
-          --enable-pic
+          --disable-programs \
+          --disable-avdevice \
+          --disable-swresample \
+          --disable-postproc \
+          --disable-debug
 
         make -j$(nproc)
         make install
 
-    - name: Upload artifact
+    - name: Upload Build
       uses: actions/upload-artifact@v4
       with:
-        name: ffmpeg-android-build
-        path: ffmpeg/build
+        name: ffmpeg-android-arm64
+        path: ffmpeg-build
