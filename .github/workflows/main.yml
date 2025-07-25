@@ -35,5 +35,4 @@ jobs:
           include-hidden-files: true
           name: ffmpeg7-android
           path: |
-            "**/ffmpeg-android-build/out"
-#            "ffmpeg-android-build/ffmpeg-android-build/out"
+            "~/ffmpeg-android-build/ffmpeg-android-build/out"
