@@ -8,12 +8,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - - name: Checkout FFmpeg Maker
-      - uses: actions/checkout@v4
-      - with:
-        repository: Javernaut/ffmpeg-android-makere
-        ref: main
-        path: ffmpeg-android-maker
+      - name: Checkout FFmpeg Maker
+        uses: actions/checkout@v4
+        with:
+          repository: Javernaut/ffmpeg-android-maker
+          ref: main
+          path: ffmpeg-android-maker
 
       - name: Build FFmpeg
         working-directory: ffmpeg-android-maker
