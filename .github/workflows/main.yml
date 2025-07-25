@@ -29,16 +29,12 @@ jobs:
           export ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME
           ./ffmpeg-android-maker.sh
 
-      - name: List Output Directory (for debugging)
-        run: |
-          pwd
-          echo pwd
-
       - name: Upload FFmpeg Build
         uses: actions/upload-artifact@v4
+        run: pwd
         with:
           include-hidden-files: true
           name: ffmpeg7-android
           path: |
             "**/ffmpeg-android-build/out"
-            "ffmpeg-android-build/ffmpeg-android-build/out"
+#            "ffmpeg-android-build/ffmpeg-android-build/out"
