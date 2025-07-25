@@ -12,7 +12,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Javernaut/ffmpeg-android-maker
-          ref: main
+          ref: master
           path: ffmpeg-android-maker
 
       - name: Build FFmpeg
