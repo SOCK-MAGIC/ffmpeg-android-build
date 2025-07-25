@@ -15,6 +15,9 @@ jobs:
           ref: master
           path: ffmpeg-android-maker
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Build FFmpeg
         working-directory: ffmpeg-android-maker
         run: |
