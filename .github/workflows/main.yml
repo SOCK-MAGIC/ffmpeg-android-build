@@ -8,15 +8,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - - name: Checkout FFmpeg Maker
+      - uses: actions/checkout@v4
+      - with:
+        repository: Javernaut/ffmpeg-android-makere
+        ref: main
+        path: ffmpeg-android-maker
 
-    - name: Clone FFmpeg Maker
-      run: |
-        git clone https://github.com/Javernaut/ffmpeg-android-maker.git
-        cd ffmpeg-android-maker
-        ./ffmpeg-android-maker.sh
-        ll
-    - name: Upload FFmpeg Build
-      uses: actions/upload-artifact@v4
-      with:
-        name: ffmpeg7-android
-        path: ~/out
+      - name: Build FFmpeg
+        working-directory: ffmpeg-android-maker
+        run: |
+          set -e # Exit immediately if a command fails
+          # set -x # Uncomment for detailed command logging during debugging
+          ./ffmpeg-android-maker.sh
+
+      - name: List Output Directory (for debugging)
+        if: always()
+        run: ls -Rl ~/out
+
+      - name: Upload FFmpeg Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ffmpeg7-android
+          path: ~/out
