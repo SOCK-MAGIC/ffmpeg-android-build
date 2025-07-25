@@ -22,7 +22,7 @@ jobs:
       run: |
         mkdir deps && cd deps
         git clone https://github.com/mstorsjo/rtmpdump.git
-        git clone https://git.videolan.org/git/x264.git
+        git clone https://code.videolan.org/videolan/x264.git/
         git clone https://bitbucket.org/multicoreware/x265_git.git
         git clone https://chromium.googlesource.com/webm/libvpx
         git clone https://aomedia.googlesource.com/aom
