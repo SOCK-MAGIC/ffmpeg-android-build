@@ -40,5 +40,5 @@ jobs:
           include-hidden-files: true
           name: ffmpeg7-android
           path: |
-            '**/out/*'
-            ${{ github.workspace }}/output/
+            "**/ffmpeg-android-build/out"
+            "ffmpeg-android-build/ffmpeg-android-build/out"
