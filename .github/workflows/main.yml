@@ -29,10 +29,10 @@ jobs:
 
       - name: List Output Directory (for debugging)
         if: always()
-        run: ls -Rl ~/out
+        run: ll
 
       - name: Upload FFmpeg Build
         uses: actions/upload-artifact@v4
         with:
           name: ffmpeg7-android
-          path: ~/out
+          path: ~/ffmpeg-android-maker/out
