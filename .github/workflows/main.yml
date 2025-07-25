@@ -31,12 +31,12 @@ jobs:
 
       - name: List Output Directory (for debugging)
         run: |
-          cd ffmpeg-android-maker
-          cd output
-          ls
+          pwd
+          echo pwd
 
       - name: Upload FFmpeg Build
         uses: actions/upload-artifact@v4
         with:
+          include-hidden-files: true
           name: ffmpeg7-android
           path: '**/out/*'
