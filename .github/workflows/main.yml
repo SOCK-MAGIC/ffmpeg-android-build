@@ -23,6 +23,8 @@ jobs:
         run: |
           set -e # Exit immediately if a command fails
           # set -x # Uncomment for detailed command logging during debugging
+          export ANDROID_SDK_HOME=$ANDROID_HOME
+          export ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME
           ./ffmpeg-android-maker.sh
 
       - name: List Output Directory (for debugging)
