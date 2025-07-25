@@ -16,7 +16,7 @@ jobs:
 
     - name: Clone FFmpeg
       run: |
-        git clone --branch n7.0 https://git.ffmpeg.org/ffmpeg.git ffmpeg
+        git clone --branch n7.1.1 https://git.ffmpeg.org/ffmpeg.git ffmpeg
 
     - name: Clone Dependencies
       run: |
