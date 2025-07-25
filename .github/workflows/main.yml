@@ -29,6 +29,8 @@ jobs:
           export ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME
           ./ffmpeg-android-maker.sh
 
+      - run: pwd
+
       - name: Upload FFmpeg Build
         uses: actions/upload-artifact@v4
         with:
