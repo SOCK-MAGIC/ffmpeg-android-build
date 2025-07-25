@@ -28,7 +28,6 @@ jobs:
         git clone https://aomedia.googlesource.com/aom
         git clone https://github.com/mstorsjo/fdk-aac.git
         git clone https://github.com/xiph/opus.git
-        git clone https://github.com/tanersener/mobile-ffmpeg-lame.git mp3lame
 
     - name: Build Dependencies
       run: |
@@ -40,7 +39,6 @@ jobs:
         cd aom && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=OFF -DENABLE_EXAMPLES=OFF .. && make -j$(nproc) && sudo make install && cd ../..
         cd fdk-aac && autoreconf -fiv && ./configure --enable-static && make -j$(nproc) && sudo make install && cd ..
         cd opus && ./autogen.sh && ./configure --enable-static && make -j$(nproc) && sudo make install && cd ..
-        cd mp3lame && ./configure --enable-static && make -j$(nproc) && sudo make install && cd ..
 
     - name: Build FFmpeg 7
       run: |
@@ -61,7 +59,6 @@ jobs:
           --enable-libx265 \
           --enable-libvpx \
           --enable-libaom \
-          --enable-libmp3lame \
           --enable-libopus \
           --enable-libfdk_aac \
           --enable-librtmp \
