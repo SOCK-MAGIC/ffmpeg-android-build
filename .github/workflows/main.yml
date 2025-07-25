@@ -38,4 +38,4 @@ jobs:
         with:
           include-hidden-files: true
           name: ffmpeg7-android
-          path: out
+          path: ./out
