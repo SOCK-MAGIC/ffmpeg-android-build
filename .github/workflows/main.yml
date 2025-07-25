@@ -32,6 +32,7 @@ jobs:
       - name: List Output Directory (for debugging)
         run: |
           cd ffmpeg-android-maker
+          cd output
           ls
 
       - name: Upload FFmpeg Build
