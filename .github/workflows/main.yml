@@ -35,11 +35,10 @@ jobs:
           set -e
           ./ffmpeg-android-maker.sh
 
-      - run:
       - name: List True Output Directory
         # This step now uses the exact path output by the script
         run: |
-          echo "ffmpeg_build_output_path=$OUTPUT_DIR" >> $GITHUB_OUTPUT
+          echo "$OUTPUT_DIR"
           ls -Rl "${{ steps.build_ffmpeg.outputs.ffmpeg_build_output_path }}"
 
       - name: Upload FFmpeg Build
