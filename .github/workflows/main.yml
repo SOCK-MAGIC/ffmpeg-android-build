@@ -20,22 +20,30 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+#      - name: Build FFmpeg
+#        working-directory: ffmpeg-android-maker
+#        run: |
+#          set -e # Exit immediately if a command fails
+#          # set -x # Uncomment for detailed command logging during debugging
+#          export ANDROID_SDK_HOME=$ANDROID_HOME
+#          export ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME
+#          ./ffmpeg-android-maker.sh
       - name: Build FFmpeg
+        id: build_ffmpeg
         working-directory: ffmpeg-android-maker
         run: |
-          set -e # Exit immediately if a command fails
-          # set -x # Uncomment for detailed command logging during debugging
-          export ANDROID_SDK_HOME=$ANDROID_HOME
-          export ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME
+          set -e
           ./ffmpeg-android-maker.sh
 
-      - run: |
-          pwd
-          ls
+      - run:
+      - name: List True Output Directory
+        # This step now uses the exact path output by the script
+        run: |
+          echo "ffmpeg_build_output_path=$OUTPUT_DIR" >> $GITHUB_OUTPUT
+          ls -Rl "${{ steps.build_ffmpeg.outputs.ffmpeg_build_output_path }}"
 
       - name: Upload FFmpeg Build
         uses: actions/upload-artifact@v4
         with:
-          include-hidden-files: true
-          name: ffmpeg7-android
-          path: ./out
+          name: ffmpeg7-android-arm64
+          path: ffmpeg-android-maker/output
