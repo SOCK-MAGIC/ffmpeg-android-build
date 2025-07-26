@@ -31,9 +31,9 @@ jobs:
         id: build_ffmpeg
         working-directory: ffmpeg-android-maker
         run: |
+          set -e
           export ANDROID_SDK_HOME=$ANDROID_HOME
           export ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME
-          set -e
           ./ffmpeg-android-maker.sh
 
       - name: List True Output Directory
